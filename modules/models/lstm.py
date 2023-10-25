@@ -45,6 +45,9 @@ class LongShortTermMemory(BaseModelWrapper):
             *self.layers
         ])
         self.model.compile(optimizer=self.optimizer, loss="mse")
+        # Show model summary
+        self.model.summary()
+        # Fit model
         self.model.fit(generator, epochs=self.epochs,
                        callbacks=[self.early_stop])
 
@@ -58,8 +61,7 @@ class LongShortTermMemory(BaseModelWrapper):
         return np.array(preds).squeeze()
 
     def summary(self):
-        # self.model.summary(print_fn=print)
-        ...
+        print(f'{self.name} model summary:')
 
     def reset(self):
         self.model.reset_states()
