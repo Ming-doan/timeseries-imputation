@@ -1,4 +1,4 @@
-# Ghost Time Serise Training Modules
+# Ghost Time Series Training Modules
 
 Project of `AIL303m` FPT University Da Nang. For conference paper.
 
@@ -16,10 +16,12 @@ Project of `AIL303m` FPT University Da Nang. For conference paper.
 - `xgb` : XGBoost
 - `vote` : Voting of Machine Learning
 - `jeong` : Jeong Stacking
+- `arima` : AutoRegressive Integrated Moving Average
 - `rnn` : Recurrent Neural Network
 - `lstm` : Long-Short Term Memory
 - `cnn1d` : Convolution Network 1D
 - `gans` : Generative Adversarial Network
+- `transformer` : Transformer
 
 ## 📖 Documentation
 
