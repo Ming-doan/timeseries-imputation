@@ -30,8 +30,8 @@ class CNN1D(BaseModelWrapper):
         if layers is None:
             self.layers = [
                 Conv1D(filters=128, kernel_size=3, activation='relu'),
-                Conv1D(filters=128, kernel_size=3, activation='relu'),
-                MaxPooling1D(pool_size=2),
+                # Conv1D(filters=128, kernel_size=3, activation='relu'),
+                # MaxPooling1D(pool_size=2),
                 Flatten(),
                 Dense(64, activation='relu'),
                 Dense(1)
