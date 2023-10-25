@@ -2,7 +2,17 @@
 Getting model by alias.
 """
 
-from .models import *
+from .models import (
+    CommonMachineLearning,
+    Voting,
+    JeongStacking,
+    ARIMA,
+    RecurrentNetwork,
+    LongShortTermMemory,
+    CNN1D,
+    GANs,
+    TransformerTS
+)
 
 
 def get_by_alias(alias: str, **kwargs):
@@ -37,6 +47,8 @@ def get_by_alias(alias: str, **kwargs):
         return Voting(**filter_and_format('vote', kwargs))
     if alias == 'jeong':
         return JeongStacking(**filter_and_format('jeong', kwargs))
+    if alias == 'arima':
+        return ARIMA(**filter_and_format('arima', kwargs))
     if alias == 'rnn':
         return RecurrentNetwork(**filter_and_format('rnn', kwargs))
     if alias == 'lstm':
@@ -45,6 +57,8 @@ def get_by_alias(alias: str, **kwargs):
         return CNN1D(**filter_and_format('cnn1d', kwargs))
     if alias == 'gans':
         return GANs(**filter_and_format('gans', kwargs))
+    if alias == 'transformer':
+        return TransformerTS(**filter_and_format('transformer', kwargs))
     raise ValueError(
         f'Invalid model alias. Got: {alias}')
 
