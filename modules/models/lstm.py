@@ -4,7 +4,7 @@ Long Short-Term Memory (LSTM) model.
 
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, InputLayer
+from keras.layers import Dense, LSTM, InputLayer, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from tqdm import tqdm
@@ -29,9 +29,11 @@ class LongShortTermMemory(BaseModelWrapper):
 
         if layers is None:
             self.layers = [
-                LSTM(units=50, return_sequences=True),
-                LSTM(units=50),
-                Dense(units=kwargs.get('n_features', 1))
+                LSTM(64, activation='relu', return_sequences=True),
+                LSTM(32, activation='relu'),
+                Flatten(),
+                Dense(128, activation='relu'),
+                Dense(self.n_features)
             ]
         else:
             self.layers = layers
