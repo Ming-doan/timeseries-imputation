@@ -89,6 +89,4 @@ class WindowGenerator(Sequence):
         """
         Get True values of dataset.
         """
-        if self.batch_size == 1:
-            return self.dataframe.iloc[self.window_size:].values.squeeze()
-        return self.dataframe.iloc[self.window_size:-self.batch_size+1].values.squeeze()
+        return self.dataframe.iloc[self.window_size:self.window_size + (len(self) * self.batch_size)].values.squeeze()

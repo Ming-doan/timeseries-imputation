@@ -17,11 +17,11 @@ class LongShortTermMemory(BaseModelWrapper):
     """
     name = "LSTM"
 
-    def __init__(self, n_features: int = 1, layers=None, **kwargs):
+    def __init__(self, layers=None, **kwargs):
         super().__init__(**kwargs)
         self.is_generator = True
 
-        self.n_features = n_features
+        self.n_features = kwargs.get('n_features', 1)
         self.epochs = kwargs.get('epochs', 100)
         self.early_stop = EarlyStopping(
             monitor='loss', patience=kwargs.get('patience', 3))
@@ -31,7 +31,7 @@ class LongShortTermMemory(BaseModelWrapper):
             self.layers = [
                 LSTM(units=50, return_sequences=True),
                 LSTM(units=50),
-                Dense(units=n_features)
+                Dense(units=kwargs.get('n_features', 1))
             ]
         else:
             self.layers = layers
