@@ -21,7 +21,6 @@ class LongShortTermMemory(BaseModelWrapper):
         super().__init__(**kwargs)
         self.is_generator = True
 
-        self.n_features = kwargs.get('n_features', 1)
         self.epochs = kwargs.get('epochs', 100)
         self.early_stop = EarlyStopping(
             monitor='loss', patience=kwargs.get('patience', 3))
@@ -33,7 +32,7 @@ class LongShortTermMemory(BaseModelWrapper):
                 LSTM(32, activation='relu'),
                 Flatten(),
                 Dense(128, activation='relu'),
-                Dense(self.n_features)
+                Dense(1)
             ]
         else:
             self.layers = layers
@@ -42,7 +41,7 @@ class LongShortTermMemory(BaseModelWrapper):
 
     def fit(self, generator, x, y):
         self.model = Sequential([
-            InputLayer(input_shape=(generator.window_size, self.n_features),
+            InputLayer(input_shape=(generator.window_size, generator.dataframe.shape[1]),
                        batch_size=generator.batch_size),
             *self.layers
         ])

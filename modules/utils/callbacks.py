@@ -50,8 +50,9 @@ class SavePlot(Callback):
         super().__init__()
         self.save_directory = save_directory
         self.n_times = n_models * 2
-
+        # Tracking
         self.tracking = 0
+        self.phase = 1
 
     def after_predict(self, y_true, y_pred):
         """
@@ -74,7 +75,7 @@ class SavePlot(Callback):
         self.tracking += 1
 
         # Direction of pipeline
-        direction = 'Pipeline' if self.tracking == self.n_times else 'Reverse_Pipeline'
+        direction = 'Pipeline' if self.tracking <= self.n_times // 2 else 'Reverse_Pipeline'
 
         plt.figure(figsize=(15, 5))
         plt.plot(y_true, label='Actual')
@@ -83,9 +84,14 @@ class SavePlot(Callback):
         plt.legend()
         if self.save_directory is not None:
             plt.savefig(self.save_directory +
-                        f'/{self.model.name}_{direction}.png')
+                        f'/{self.model.name}_{direction}_{self.phase}.png')
         plt.show()
         plt.close()
+
+        # Increment the phase
+        if self.tracking == self.n_times:
+            self.phase += 1
+            self.tracking = 0
 
 
 class Combined(Callback):
@@ -107,6 +113,7 @@ class Combined(Callback):
         self.metrics = Metrics()
         # Tracking
         self.n_times_tracking = 0
+        self.phase = 1
 
     def set_model(self, model: BaseModelWrapper):
         self.model.append(model)
@@ -145,7 +152,7 @@ class Combined(Callback):
                 plt.legend()
                 if self.save_directory is not None:
                     plt.savefig(self.save_directory +
-                                f'/{model_name}_combined.png')
+                                f'/{model_name}_combined_{self.phase}.png')
                 plt.show()
                 plt.close()
 
@@ -156,6 +163,8 @@ class Combined(Callback):
                 logger.info(
                     f'Similarity on combining of model {model_name}: {metrics[0]}')
 
+            # Increment the phase
+            self.phase += 1
             # Reset the tracking
             self.n_times_tracking = 0
             self.model = []
