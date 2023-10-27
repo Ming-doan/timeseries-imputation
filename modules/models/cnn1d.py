@@ -2,13 +2,12 @@
 CNN1D model for time series forecasting.
 """
 
-from ._base import BaseModelWrapper
-import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense, InputLayer, Conv1D, MaxPooling1D, Flatten
+from keras.layers import Dense, InputLayer, Conv1D, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from tqdm import tqdm
+from ..utils.utils import forecast_support
+from ._base import BaseModelWrapper
 
 
 class CNN1D(BaseModelWrapper):
@@ -30,7 +29,7 @@ class CNN1D(BaseModelWrapper):
         if layers is None:
             self.layers = [
                 Conv1D(filters=128, kernel_size=3, activation='relu'),
-                # Conv1D(filters=128, kernel_size=3, activation='relu'),
+                Conv1D(filters=128, kernel_size=3, activation='relu'),
                 # MaxPooling1D(pool_size=2),
                 Flatten(),
                 Dense(64, activation='relu'),
@@ -54,8 +53,7 @@ class CNN1D(BaseModelWrapper):
         # >>> for data in generator:
         # >>>     print(data.shape) # (batch_size, window_size, n_features)
         self.model = Sequential([
-            InputLayer(input_shape=(generator.window_size, self.n_features),
-                       batch_size=generator.batch_size),
+            InputLayer(input_shape=(generator.window_size, self.n_features)),
             *self.layers
         ])
         self.model.compile(optimizer=self.optimizer, loss="mse")
@@ -78,11 +76,7 @@ class CNN1D(BaseModelWrapper):
     def forecast(self, x, steps):
         # x is a numpy array of shape (window_size, n_features)
         # steps is an integer. The number of future value to forecast.
-        preds = []
-        x = x.reshape(1, *x.shape)
-        for _ in tqdm(range(steps), desc=f'Forecasting {self.name}'):
-            preds.append(self.model.predict(x, verbose=0)[0])
-        return np.array(preds).squeeze()
+        return forecast_support(self.model.predict, x.reshape(1, -1), steps, verbose=0)
 
     def summary(self):
         print(f'{self.name} model summary:')

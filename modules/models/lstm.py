@@ -2,12 +2,11 @@
 Long Short-Term Memory (LSTM) model.
 """
 
-import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, InputLayer, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from tqdm import tqdm
+from ..utils.utils import forecast_support
 from ._base import BaseModelWrapper
 
 
@@ -56,10 +55,7 @@ class LongShortTermMemory(BaseModelWrapper):
         return self.model.predict(generator).squeeze()
 
     def forecast(self, x, steps):
-        preds = []
-        for _ in tqdm(range(steps), desc=f'Forecasting {self.name}'):
-            preds.append(self.model.predict(x, verbose=0)[0])
-        return np.array(preds).squeeze()
+        return forecast_support(self.model.predict, x.reshape(1, -1), steps, verbose=0)
 
     def summary(self):
         print(f'{self.name} model summary:')

@@ -14,14 +14,14 @@ def ml_shape_repair(*arr: npt.NDArray[np.float32]):
     return tuple(a.squeeze() for a in arr)
 
 
-def forecast_support(predict_func, x: npt.NDArray[np.float32], steps: int):
+def forecast_support(predict_func, x: npt.NDArray[np.float32], steps: int, **kwargs):
     """
     Support for forecast functions.
     """
     forecasted = []
     for _ in tqdm(range(steps), desc='Forecasting'):
         # Predict the output
-        y = predict_func(x)
+        y = predict_func(x, **kwargs)
         # Append the output
         forecasted.append(y)
         # Update the input
