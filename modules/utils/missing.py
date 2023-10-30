@@ -48,7 +48,8 @@ class CreateMissingDataFrame:
         missing_gaps: int,
         seed: int = None,
         split_mode: Union[SplitMode, str] = SplitMode.Linear,
-        is_concate: bool = False
+        is_concate: bool = False,
+        is_constant_missing: bool = False,
     ):
         # Original Dataframe [pd.DataFrame]
         self.dataframe: pd.DataFrame = dataframe
@@ -69,6 +70,8 @@ class CreateMissingDataFrame:
         self.missing_indexs: list[tuple[int, int]] = None
         # If is_concate is True, remove missing values at other position and concate it [bool]
         self.is_concate: bool = is_concate
+        # If is_constant_missing is True, missing_percentage will be constant [bool]
+        self.is_constant_missing: bool = is_constant_missing
 
     def __dropping_dataframe(self):
         """
@@ -87,8 +90,11 @@ class CreateMissingDataFrame:
 
         # Get amount of value can be missing
         # length of dataframe * missing_percentage / 100 [int]
-        missing_amount = int(
-            self.dataframe.shape[0] * self.missing_percentage / 100)
+        if self.is_constant_missing:
+            missing_amount = int(self.missing_percentage)
+        else:
+            missing_amount = int(
+                self.dataframe.shape[0] * self.missing_percentage / 100)
 
         # Copy dataframe to working_dataframe to prevent change original dataframe
         working_dataframe = self.dataframe.copy()
