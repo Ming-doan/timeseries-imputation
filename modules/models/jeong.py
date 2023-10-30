@@ -202,3 +202,11 @@ class JeongStacking(BaseModelWrapper):
 
     def reset(self):
         self.model = JeongStackingRegressor(stages=self.stage)
+
+    def get_params(self):
+        params = {}
+        for i, stage in enumerate(self.stage):
+            params[f'stage_{i+1}'] = {}
+            for estimator in stage.estimators:
+                params[f'stage_{i+1}'][estimator.__class__.__name__] = estimator.get_params()
+        return params

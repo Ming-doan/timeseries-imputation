@@ -94,6 +94,9 @@ class CommonMachineLearning(BaseModelWrapper):
         self.model = self.model.__class__(**self.model.get_params())
         self.name = self.model.__class__.__name__
 
+    def get_params(self):
+        return self.model.get_params()
+
     @staticmethod
     def get_ml_aliases():
         """

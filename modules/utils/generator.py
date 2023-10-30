@@ -66,6 +66,9 @@ class WindowGenerator(Sequence):
         """
         Generete all windows.
         """
+        batch_size = self.batch_size
+        # Assign self.batch_size to 1 to get all windows
+        self.batch_size = 1
         x = None
         y = None
         progress = tqdm(range(len(self)), desc='Generating windows')
@@ -77,6 +80,8 @@ class WindowGenerator(Sequence):
             else:
                 x = np.concatenate((x, _x))
                 y = np.concatenate((y, _y))
+        # Assign self.batch_size to original value
+        self.batch_size = batch_size
         return np.array(x), np.array(y)
 
     def get_last_window(self) -> npt.NDArray[np.float32]:

@@ -3,11 +3,13 @@ Callbacks function for training.
 """
 
 from abc import abstractmethod
+import enum
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 from loguru import logger
 from ..models._base import BaseModelWrapper
+from .missing import CreateMissingDataFrame
 from .metrics import Metrics
 
 
@@ -94,12 +96,36 @@ class SavePlot(Callback):
             self.tracking = 0
 
 
+class CombinationMode(enum.Enum):
+    """
+    Combination mode for combining the pipeline and reverse pipeline.
+    """
+    MEAN = 'mean'
+    DATA_PER = 'data_per'
+    SIMILARITY = 'similarity'
+
+    @staticmethod
+    def get_combination_mode(mode: str):
+        """
+        Get the combination mode.
+        """
+        if mode == CombinationMode.MEAN.value:
+            return CombinationMode.MEAN
+        elif mode == CombinationMode.DATA_PER.value:
+            return CombinationMode.DATA_PER
+        elif mode == CombinationMode.SIMILARITY.value:
+            return CombinationMode.SIMILARITY
+        else:
+            raise ValueError(
+                f'Invalid combination mode: {mode}. Please choose from {CombinationMode}')
+
+
 class Combined(Callback):
     """
     Combine pipeline and reverse pipeline.
     """
 
-    def __init__(self, n_models: int, save_directory: str = None):
+    def __init__(self, n_models: int, combination_mode: str = CombinationMode.MEAN, df: CreateMissingDataFrame = None, save_directory: str = None):
         super().__init__()
         # Override model
         self.model: list[BaseModelWrapper] = []
@@ -109,11 +135,28 @@ class Combined(Callback):
         self.actual = None
         self.pipeline = []
         self.reverse_pipeline = []
+        self.combination_mode = combination_mode if isinstance(
+            combination_mode, CombinationMode) else CombinationMode.get_combination_mode(combination_mode)
+        # Window generator
+        self.pipeline_data_length, self.reverse_pipeline_data_length = self.calculate_data_length(
+            df)
         # Metrics
         self.metrics = Metrics()
         # Tracking
         self.n_times_tracking = 0
         self.phase = 1
+
+    def calculate_data_length(self, creator: CreateMissingDataFrame):
+        """
+        Calculate the length of the data.
+        """
+        if creator is None:
+            return None, None
+        data_length = len(creator.dataframe)
+        pipeline_data_length = creator.missing_indexs[0][0]
+        reverse_pipeline_data_length = data_length - \
+            creator.missing_indexs[0][1]
+        return pipeline_data_length, reverse_pipeline_data_length
 
     def set_model(self, model: BaseModelWrapper):
         self.model.append(model)
@@ -140,8 +183,33 @@ class Combined(Callback):
                 # Get model name
                 model_name = self.model[i].name
                 # When the reverse pipeline is saved, combine the pipeline and reverse pipeline
-                combined_pipeline = np.mean(
-                    (pipe, reverse_pipe[::-1]), axis=0)
+                if self.combination_mode == CombinationMode.MEAN:
+                    combined_pipeline = np.mean(
+                        (pipe, reverse_pipe[::-1]), axis=0)
+                elif self.combination_mode == CombinationMode.DATA_PER:
+                    if self.pipeline_data_length is None or self.reverse_pipeline_data_length is None:
+                        raise ValueError(
+                            'Create Missing Dataframe `df` is required to calculate the data length')
+                    # Calculate the percentage of data
+                    alpha = self.pipeline_data_length / \
+                        (self.pipeline_data_length +
+                         self.reverse_pipeline_data_length)
+                    # Combine the pipeline and reverse pipeline
+                    combined_pipeline = alpha * pipe + \
+                        (1 - alpha) * reverse_pipe[::-1]
+                elif self.combination_mode == CombinationMode.SIMILARITY:
+                    # Calculate similarity
+                    pipe_similarity = Metrics.similarity(self.actual, pipe)
+                    reverse_pipe_similarity = Metrics.similarity(
+                        self.actual, reverse_pipe[::-1])
+                    alpha = pipe_similarity / \
+                        (pipe_similarity + reverse_pipe_similarity)
+                    # Combine the pipeline and reverse pipeline
+                    combined_pipeline = alpha * pipe + \
+                        (1 - alpha) * reverse_pipe[::-1]
+                else:
+                    raise ValueError(
+                        f'Invalid combination mode: {self.combination_mode}. Please choose from {CombinationMode}')
 
                 # Save the plot
                 plt.figure(figsize=(15, 5))

@@ -48,3 +48,6 @@ class Voting(BaseModelWrapper):
 
     def reset(self):
         self.model = VotingRegressor(estimators=self.models)
+
+    def get_params(self):
+        return self.model.get_params()

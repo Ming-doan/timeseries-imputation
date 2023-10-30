@@ -50,3 +50,9 @@ class BaseModelWrapper:
         """
         Reset the model.
         """
+
+    @abstractmethod
+    def get_params(self):
+        """
+        Get the parameters of the model.
+        """

@@ -5,7 +5,7 @@ CNN1D model for time series forecasting.
 from keras.models import Sequential
 from keras.layers import Dense, InputLayer, Conv1D, Flatten
 from keras.optimizers import Adam
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping, History
 from ..utils.utils import forecast_support
 from ._base import BaseModelWrapper
 
@@ -21,9 +21,10 @@ class CNN1D(BaseModelWrapper):
         self.is_generator = True
 
         self.n_features = n_features
-        self.epochs = kwargs.get('epochs', 200)
+        self.epochs = kwargs.get('epochs', 100)
         self.early_stop = EarlyStopping(
             monitor='loss', patience=kwargs.get('patience', 3))
+        self.histories = []
         self.optimizer = kwargs.get('optimizer', Adam(kwargs.get('lr', 0.001)))
 
         if layers is None:
@@ -60,8 +61,10 @@ class CNN1D(BaseModelWrapper):
         # Show model summary
         self.model.summary()
         # Fit model
+        history = History()
         self.model.fit(generator, epochs=self.epochs,
-                       callbacks=[self.early_stop])
+                       callbacks=[self.early_stop, history])
+        self.histories.append(history)
 
     def predict(self, generator, x):
         # If `is_generator` is True, the system will give generator as `WindowGenerator`.
