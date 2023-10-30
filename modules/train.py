@@ -64,14 +64,14 @@ class Trainer:
 
         # Check test generator size
         is_predict_able = True
-        if test_generator.window_size > len(test_generator.dataframe):
+        if test_generator.window_size >= len(test_generator.dataframe) - 1:
             is_predict_able = False
             logger.warning(
-                f'Window size is larger than the dataframe size. {test_generator.window_size} > {len(test_generator.dataframe)}. Disabling prediction.')
-        if test_generator.batch_size > len(test_generator.dataframe):
+                f'Window size is larger than the dataframe size. {test_generator.window_size} >= {len(test_generator.dataframe) - 1}. Disabling prediction.')
+        if test_generator.batch_size >= len(test_generator.dataframe) - 1:
             is_predict_able = False
             logger.warning(
-                f'Batch size is larger than the dataframe size. {test_generator.batch_size} > {len(test_generator.dataframe)}. Disabling prediction.')
+                f'Batch size is larger than the dataframe size. {test_generator.batch_size} >= {len(test_generator.dataframe) - 1}. Disabling prediction.')
 
         # Iterate over all models
         for i, model in enumerate(self.models):
