@@ -45,7 +45,7 @@ class JeongStackingRegressor(_BaseModel):
     """
 
     def __init__(self, stages: list[JeongStage], cv_splits: int = 5, random_state: int = 42):
-        self.stages = stages
+        self.stages = self.__auto_format_stages(stages)
         self.cv_splits = cv_splits
         self.random_state = random_state
         self._x_train: npt.NDArray[np.float32] = None
@@ -59,6 +59,21 @@ class JeongStackingRegressor(_BaseModel):
         if len(self.stages[-1].estimators) > 1:
             raise ValueError(
                 f"Last stage must have only one estimator. Got {len(self.stages[-1].estimators)}.")
+
+    def __auto_format_stages(self, stages: list[JeongStage] = None):
+        formated_stages = []
+        # Iterate over stages
+        for stage in stages:
+            # Check if stage is a list
+            if isinstance(stage, list):
+                formated_stages.append(JeongStage(estimators=stage))
+            # Check if stage is a JeongStage
+            elif isinstance(stage, JeongStage):
+                formated_stages.append(stage)
+            else:
+                raise ValueError(
+                    f"Invalid stage type. Must be list or JeongStage. Got {type(stage)}.")
+        return formated_stages
 
     def __set_datasets(self, x: npt.NDArray[np.float32], y: npt.NDArray[np.float32]):
         # Check if shape of dataset is matched
@@ -154,24 +169,22 @@ class JeongStacking(BaseModelWrapper):
     """
     name = 'JeongStacking'
 
-    def __init__(self, stages: list[JeongStage] = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.stage: list[JeongStage] = [JeongStage(estimators=[
-            AdaBoostRegressor(DecisionTreeRegressor(), random_state=42),
-            AdaBoostRegressor(DecisionTreeRegressor(), random_state=42),
-            RandomForestRegressor(random_state=42),
-            RandomForestRegressor(random_state=42),
-            ExtraTreeRegressor(random_state=42),
-            GradientBoostingRegressor(random_state=42)
+            AdaBoostRegressor(DecisionTreeRegressor()),
+            AdaBoostRegressor(DecisionTreeRegressor()),
+            RandomForestRegressor(),
+            RandomForestRegressor(),
+            ExtraTreeRegressor(),
+            GradientBoostingRegressor()
         ]),
             JeongStage(estimators=[
-                RandomForestRegressor(random_state=42)
+                RandomForestRegressor()
             ])
         ]
-        if stages is None:
-            self.model = JeongStackingRegressor(stages=self.stage)
-        else:
-            self.model = JeongStackingRegressor(stages=stages)
+        self.model = JeongStackingRegressor(
+            stages=kwargs.get('stages', self.stage))
 
         self.is_generator = False
 
@@ -192,7 +205,7 @@ class JeongStacking(BaseModelWrapper):
     def summary(self):
         print('JeongStackingRegressor:')
         print('-----------------------')
-        for i, stage in enumerate(self.stage):
+        for i, stage in enumerate(self.model.stages):
             print(f'- Stage {i+1}:')
             for estimator in stage.estimators:
                 model_params = str(estimator.get_params()).replace(
@@ -201,7 +214,7 @@ class JeongStacking(BaseModelWrapper):
                     f'    - {estimator.__class__.__name__} ({model_params})')
 
     def reset(self):
-        self.model = JeongStackingRegressor(stages=self.stage)
+        self.model = JeongStackingRegressor(stages=self.model.stages)
 
     def get_params(self):
         params = {}
