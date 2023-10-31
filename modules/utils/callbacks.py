@@ -125,7 +125,7 @@ class Combined(Callback):
     Combine pipeline and reverse pipeline.
     """
 
-    def __init__(self, n_models: int, combination_mode: str = CombinationMode.MEAN, df: CreateMissingDataFrame = None, save_directory: str = None):
+    def __init__(self, n_models: int, combination_mode: str = CombinationMode.DATA_PER, df: CreateMissingDataFrame = None, save_directory: str = None):
         super().__init__()
         # Override model
         self.model: list[BaseModelWrapper] = []
@@ -174,7 +174,7 @@ class Combined(Callback):
             self.pipeline.append(y_fore)
         # Save y_fore as reverse pipeline
         else:
-            self.reverse_pipeline.append(y_fore)
+            self.reverse_pipeline.append(y_fore[::-1])
 
         if self.n_times_tracking == self.n_times:
             for i, pipe in enumerate(self.pipeline):
@@ -185,7 +185,7 @@ class Combined(Callback):
                 # When the reverse pipeline is saved, combine the pipeline and reverse pipeline
                 if self.combination_mode == CombinationMode.MEAN:
                     combined_pipeline = np.mean(
-                        (pipe, reverse_pipe[::-1]), axis=0)
+                        (pipe, reverse_pipe), axis=0)
                 elif self.combination_mode == CombinationMode.DATA_PER:
                     if self.pipeline_data_length is None or self.reverse_pipeline_data_length is None:
                         raise ValueError(
@@ -196,17 +196,17 @@ class Combined(Callback):
                          self.reverse_pipeline_data_length)
                     # Combine the pipeline and reverse pipeline
                     combined_pipeline = alpha * pipe + \
-                        (1 - alpha) * reverse_pipe[::-1]
+                        (1 - alpha) * reverse_pipe
                 elif self.combination_mode == CombinationMode.SIMILARITY:
                     # Calculate similarity
                     pipe_similarity = Metrics.similarity(self.actual, pipe)
                     reverse_pipe_similarity = Metrics.similarity(
-                        self.actual, reverse_pipe[::-1])
+                        self.actual, reverse_pipe)
                     alpha = pipe_similarity / \
                         (pipe_similarity + reverse_pipe_similarity)
                     # Combine the pipeline and reverse pipeline
                     combined_pipeline = alpha * pipe + \
-                        (1 - alpha) * reverse_pipe[::-1]
+                        (1 - alpha) * reverse_pipe
                 else:
                     raise ValueError(
                         f'Invalid combination mode: {self.combination_mode}. Please choose from {CombinationMode}')

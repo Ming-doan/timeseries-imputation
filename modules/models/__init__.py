@@ -10,5 +10,6 @@ from .arima import ARIMA
 from .rnn import RecurrentNetwork
 from .lstm import LongShortTermMemory
 from .cnn1d import CNN1D
+from .cnnlstm import CNNLSTM
 from .gans import GANs
 from .transformer import TransformerTS

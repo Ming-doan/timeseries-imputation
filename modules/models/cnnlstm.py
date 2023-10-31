@@ -1,20 +1,20 @@
 """
-CNN1D model for time series forecasting.
+CNNLSTM model for time series forecasting.
 """
 
 from keras.models import Sequential
-from keras.layers import Dense, InputLayer, Conv1D, Flatten, Layer
+from keras.layers import Dense, InputLayer, Conv1D, TimeDistributed, Flatten, LSTM, Layer
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from ..utils.utils import forecast_support
 from ._base import BaseModelWrapper
 
 
-class CNN1D(BaseModelWrapper):
+class CNNLSTM(BaseModelWrapper):
     """
-    CNN1D model for time series forecasting.
+    CNNLSTM model for time series forecasting.
     """
-    name = 'CNN1D'
+    name = 'CNNLSTM'
 
     def __init__(self, n_features: int = 1, layers=None, **kwargs):
         super().__init__(**kwargs)
@@ -30,9 +30,8 @@ class CNN1D(BaseModelWrapper):
             self.layers: list[Layer] = [
                 Conv1D(filters=64, kernel_size=3, activation='relu'),
                 Conv1D(filters=64, kernel_size=5, activation='relu'),
-                # MaxPooling1D(pool_size=2),
-                Flatten(),
-                # Dense(64, activation='relu'),
+                TimeDistributed(Flatten(),),
+                LSTM(64, activation='relu'),
                 Dense(1)
             ]
         else:

@@ -3,7 +3,7 @@ Long Short-Term Memory (LSTM) model.
 """
 
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, InputLayer, Flatten
+from keras.layers import Dense, LSTM, InputLayer, Flatten, Layer
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, History
 from ..utils.utils import forecast_support
@@ -27,7 +27,7 @@ class LongShortTermMemory(BaseModelWrapper):
         self.optimizer = kwargs.get('optimizer', Adam(kwargs.get('lr', 0.001)))
 
         if layers is None:
-            self.layers = [
+            self.layers: list[Layer] = [
                 LSTM(64, activation='relu', return_sequences=True),
                 LSTM(32, activation='relu'),
                 Flatten(),
@@ -65,3 +65,9 @@ class LongShortTermMemory(BaseModelWrapper):
 
     def reset(self):
         self.model.reset_states()
+
+    def get_params(self):
+        params = {}
+        for layer in self.layers:
+            params[layer.name] = layer.get_config()
+        return params

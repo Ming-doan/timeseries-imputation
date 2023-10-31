@@ -10,6 +10,7 @@ from .models import (
     RecurrentNetwork,
     LongShortTermMemory,
     CNN1D,
+    CNNLSTM,
     GANs,
     TransformerTS
 )
@@ -55,6 +56,8 @@ def get_by_alias(alias: str, **kwargs):
         return LongShortTermMemory(**filter_and_format('lstm', kwargs))
     if alias == 'cnn1d':
         return CNN1D(**filter_and_format('cnn1d', kwargs))
+    if alias == 'cnnlstm':
+        return CNNLSTM(**filter_and_format('cnnlstm', kwargs))
     if alias == 'gans':
         return GANs(**filter_and_format('gans', kwargs))
     if alias == 'transformer':
