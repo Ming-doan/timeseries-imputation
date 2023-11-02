@@ -6,9 +6,13 @@ from abc import abstractmethod
 import numpy as np
 import numpy.typing as npt
 from sklearn.model_selection import KFold
+from sklearn.linear_model import LinearRegression, Ridge, RidgeCV, SGDRegressor
+from sklearn.neighbors import KNeighborsRegressor, RadiusNeighborsRegressor
+from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
 from sklearn.ensemble import (
-    AdaBoostRegressor, GradientBoostingRegressor, RandomForestRegressor)
+    AdaBoostRegressor, BaggingRegressor, GradientBoostingRegressor, RandomForestRegressor, HistGradientBoostingRegressor)
+from xgboost import XGBRegressor
 from ..utils.utils import ml_shape_repair, forecast_support
 from ._base import BaseModelWrapper
 
@@ -171,17 +175,37 @@ class JeongStacking(BaseModelWrapper):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.stage: list[JeongStage] = [JeongStage(estimators=[
-            AdaBoostRegressor(DecisionTreeRegressor()),
-            AdaBoostRegressor(DecisionTreeRegressor()),
-            RandomForestRegressor(),
-            RandomForestRegressor(),
-            ExtraTreeRegressor(),
-            GradientBoostingRegressor()
-        ]),
-            JeongStage(estimators=[
-                RandomForestRegressor()
-            ])
+        self.stage: list[JeongStage] = [JeongStage(estimators=[LinearRegression(),
+                    Ridge(),
+                    RidgeCV(),
+                    SGDRegressor(),
+                    KNeighborsRegressor(n_neighbors=9),
+                    RadiusNeighborsRegressor(radius=3),
+                    SVR(kernel="poly", C=100, gamma="auto", degree=3, epsilon=0.1, coef0=1),
+                    DecisionTreeRegressor(max_depth=5),
+                    ExtraTreeRegressor(),
+                    AdaBoostRegressor(KNeighborsRegressor(n_neighbors=5)),
+                    AdaBoostRegressor(DecisionTreeRegressor(max_depth=4)),
+                    AdaBoostRegressor(ExtraTreeRegressor()),
+                    AdaBoostRegressor(SVR()),
+                    BaggingRegressor(KNeighborsRegressor(n_neighbors=5)),
+                    BaggingRegressor(DecisionTreeRegressor(max_depth=4)),
+                    BaggingRegressor(ExtraTreeRegressor()),
+                    BaggingRegressor(SVR()),
+                    GradientBoostingRegressor(),
+                    RandomForestRegressor(),
+                    HistGradientBoostingRegressor(),
+                    XGBRegressor()]),
+
+            JeongStage(estimators=[LinearRegression(),
+                    KNeighborsRegressor(n_neighbors=5),
+                    SVR(),
+                    DecisionTreeRegressor(max_depth=5),
+                    AdaBoostRegressor(),
+                    BaggingRegressor(),
+                    XGBRegressor()]),
+            
+             JeongStage(estimators=[LinearRegression()])
         ]
         self.model = JeongStackingRegressor(
             stages=kwargs.get('stages', self.stage))
