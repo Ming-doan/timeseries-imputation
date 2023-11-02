@@ -82,7 +82,7 @@ class SavePlot(Callback):
         plt.figure(figsize=(15, 5))
         plt.plot(y_true, label='Actual')
         plt.plot(y_fore, label='Forecasted')
-        plt.title(f'Forecasted vs Actual of {self.model.name}')
+        plt.title(f'Forecasted vs Actual of {self.model.name} on {direction}')
         plt.legend()
         if self.save_directory is not None:
             plt.savefig(self.save_directory +
