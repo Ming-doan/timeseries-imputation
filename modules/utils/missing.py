@@ -17,6 +17,7 @@ class SplitMode(enum.Enum):
     # Mode: Random, Linear
     Random = 'Random'
     Linear = 'Linear'
+    End = 'End'
 
     @staticmethod
     def get_from_string(string: str) -> 'SplitMode':
@@ -29,6 +30,8 @@ class SplitMode(enum.Enum):
             return SplitMode.Random
         elif string == SplitMode.Linear.value:
             return SplitMode.Linear
+        elif string == SplitMode.End.value:
+            return SplitMode.End
         else:
             raise ValueError('Invalid split_mode')
 
@@ -149,6 +152,12 @@ class CreateMissingDataFrame:
                 # Drop value
                 working_dataframe[upper_index: lower_index] = self.empty_value
 
+        # Split dataframe in End mode
+        elif self.split_mode == SplitMode.End:
+            mising_indexs.append(
+                (len(working_dataframe) - missing_amount, len(working_dataframe)))
+            working_dataframe[:missing_amount] = self.empty_value
+
         # Save dropped dataframe and missing index
         self.dropped_dataframe = working_dataframe
         self.missing_indexs = mising_indexs
@@ -157,6 +166,8 @@ class CreateMissingDataFrame:
             f'Dropped dataframe successfully. Missing indexs: {self.missing_indexs}')
 
     def __len__(self):
+        if self.split_mode == SplitMode.End:
+            return self.missing_gaps
         return self.missing_gaps * 2
 
     def __getitem__(self, index):
