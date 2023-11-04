@@ -3,7 +3,8 @@ Create Missing Values in Data
 """
 
 import enum
-from typing import Union
+import random
+from typing import Union, Callable
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -50,6 +51,7 @@ class CreateMissingDataFrame:
         split_mode: Union[SplitMode, str] = SplitMode.Linear,
         is_concate: bool = False,
         is_constant_missing: bool = False,
+        auto_seed: Callable = None
     ):
         # Original Dataframe [pd.DataFrame]
         self.dataframe: pd.DataFrame = dataframe
@@ -72,6 +74,11 @@ class CreateMissingDataFrame:
         self.is_concate: bool = is_concate
         # If is_constant_missing is True, missing_percentage will be constant [bool]
         self.is_constant_missing: bool = is_constant_missing
+        # If auto_seed is True, seed will be random until match condition [Callable]
+        self.auto_seed: bool = auto_seed
+
+    def __auto_seed_check(self, func):
+        ...
 
     def __dropping_dataframe(self):
         """
