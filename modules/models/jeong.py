@@ -6,9 +6,13 @@ from abc import abstractmethod
 import numpy as np
 import numpy.typing as npt
 from sklearn.model_selection import KFold
+from sklearn.linear_model import LinearRegression, Ridge, RidgeCV, SGDRegressor
+from sklearn.neighbors import KNeighborsRegressor, RadiusNeighborsRegressor
+from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
 from sklearn.ensemble import (
-    AdaBoostRegressor, GradientBoostingRegressor, RandomForestRegressor)
+    AdaBoostRegressor, BaggingRegressor, GradientBoostingRegressor, RandomForestRegressor, HistGradientBoostingRegressor)
+from xgboost import XGBRegressor
 from ..utils.utils import ml_shape_repair, forecast_support
 from ._base import BaseModelWrapper
 
@@ -172,16 +176,85 @@ class JeongStacking(BaseModelWrapper):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.stage: list[JeongStage] = [JeongStage(estimators=[
-            AdaBoostRegressor(DecisionTreeRegressor()),
-            AdaBoostRegressor(DecisionTreeRegressor()),
-            RandomForestRegressor(),
-            RandomForestRegressor(),
-            ExtraTreeRegressor(),
-            GradientBoostingRegressor()
-        ]),
+                    LinearRegression(),
+                    Ridge(),
+                    RidgeCV(),
+
+                    SGDRegressor(),
+
+                    KNeighborsRegressor(n_neighbors=7),
+                    KNeighborsRegressor(n_neighbors=5, metric='l1'),
+                    KNeighborsRegressor(n_neighbors=3, metric='l2'),
+                    KNeighborsRegressor(),
+
+                    RadiusNeighborsRegressor(radius=3),
+                    RadiusNeighborsRegressor(radius=5),
+                    RadiusNeighborsRegressor(radius=7),
+                    RadiusNeighborsRegressor(),
+
+
+                    SVR(kernel="linear", C=100, gamma="auto", degree=4, epsilon=0.1, coef0=1),
+                    SVR(kernel="linear", C=50, gamma="auto", degree=3, epsilon=0.3, coef0=1),
+                    SVR(kernel="linear", C=200, gamma="auto", degree=2, epsilon=0.2, coef0=1),
+                    SVR(),
+
+                    DecisionTreeRegressor(max_depth=5),
+                    DecisionTreeRegressor(max_depth=3),
+                    DecisionTreeRegressor(max_depth=7),
+                    DecisionTreeRegressor(),
+
+
+                    ExtraTreeRegressor(max_depth=5),
+                    ExtraTreeRegressor(max_depth=3),
+                    ExtraTreeRegressor(max_depth=7),
+                    ExtraTreeRegressor(),
+
+
+                    AdaBoostRegressor(KNeighborsRegressor(n_neighbors=5)),
+                    AdaBoostRegressor(DecisionTreeRegressor(max_depth=4)),
+                    AdaBoostRegressor(ExtraTreeRegressor()),
+                    AdaBoostRegressor(SVR()),
+                    AdaBoostRegressor(),
+
+                    BaggingRegressor(KNeighborsRegressor(n_neighbors=5)),
+                    BaggingRegressor(DecisionTreeRegressor(max_depth=4)),
+                    BaggingRegressor(ExtraTreeRegressor()),
+                    BaggingRegressor(SVR()),
+                    BaggingRegressor(),
+
+                    GradientBoostingRegressor(learning_rate= 0.1, n_estimators= 100, subsample = 1, criterion= "friedman_mse", min_samples_split = 2, min_samples_leaf = 1, max_depth = 5),
+                    GradientBoostingRegressor(learning_rate= 0.01, n_estimators= 200, subsample = 1, criterion= "friedman_mse", min_samples_split = 2, min_samples_leaf = 2, max_depth = 5),
+                    GradientBoostingRegressor(learning_rate= 0.1, n_estimators= 50, subsample = 1, criterion= "friedman_mse", min_samples_split = 2, min_samples_leaf = 1, max_depth = 3),
+                    GradientBoostingRegressor(),
+
+
+                    RandomForestRegressor(max_depth=3),
+                    RandomForestRegressor(max_depth=5),
+                    RandomForestRegressor(max_depth=7),
+                    RandomForestRegressor(),
+
+
+                    HistGradientBoostingRegressor(learning_rate=0.01, max_depth=5),
+                    HistGradientBoostingRegressor(learning_rate=0.1, max_depth=7),
+                    HistGradientBoostingRegressor(learning_rate=0.01, max_depth=3),
+                    HistGradientBoostingRegressor(),
+
+
+                    XGBRegressor()
+                ]),
+
             JeongStage(estimators=[
-                RandomForestRegressor()
-            ])
+                    Ridge(),
+                    KNeighborsRegressor(n_neighbors=5),
+                    SVR(),
+                    DecisionTreeRegressor(max_depth=5),
+                    AdaBoostRegressor(),
+                    BaggingRegressor(),
+                    RandomForestRegressor(),
+                    XGBRegressor()
+                ]),
+            
+             JeongStage(estimators=[LinearRegression()])
         ]
         self.model = JeongStackingRegressor(
             stages=kwargs.get('stages', self.stage))
