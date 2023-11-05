@@ -3,8 +3,7 @@ Create Missing Values in Data
 """
 
 import enum
-import random
-from typing import Union, Callable
+from typing import Union
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -51,7 +50,7 @@ class CreateMissingDataFrame:
         split_mode: Union[SplitMode, str] = SplitMode.Linear,
         is_concate: bool = False,
         is_constant_missing: bool = False,
-        auto_seed: Callable = None
+        safe_random_window: int = 0
     ):
         # Original Dataframe [pd.DataFrame]
         self.dataframe: pd.DataFrame = dataframe
@@ -74,11 +73,9 @@ class CreateMissingDataFrame:
         self.is_concate: bool = is_concate
         # If is_constant_missing is True, missing_percentage will be constant [bool]
         self.is_constant_missing: bool = is_constant_missing
-        # If auto_seed is True, seed will be random until match condition [Callable]
-        self.auto_seed: bool = auto_seed
-
-    def __auto_seed_check(self, func):
-        ...
+        # If safe_random_zone is True, random zone will be safe [bool]
+        # Only use when split_mode is Random
+        self.safe_random_window: int = safe_random_window
 
     def __dropping_dataframe(self):
         """
@@ -127,7 +124,16 @@ class CreateMissingDataFrame:
                                                       n: part_index * (n + 1)]
                 # Get random index
                 safe_random_zone = splited_dataframe.shape[0] - missing_amount
-                random_index = np.random.randint(0, safe_random_zone)
+                # Create random range
+                random_upper_bound = 0 + self.safe_random_window
+                random_lower_bound = safe_random_zone - self.safe_random_window
+                # Check if safe_random_zone is valid
+                if random_upper_bound > random_lower_bound:
+                    raise ValueError(
+                        f'Invalid safe_random_window. safe_random_window must be smaller than {safe_random_zone // 2}')
+                # Get random index
+                random_index = np.random.randint(
+                    random_upper_bound, random_lower_bound)
                 # Get missing index
                 upper_index = part_index * n + random_index
                 lower_index = upper_index + missing_amount
@@ -148,7 +154,7 @@ class CreateMissingDataFrame:
         elif self.split_mode == SplitMode.Linear:
             for n in range(self.missing_gaps):
                 # Get missing index
-                offset = (part_index // 2 - missing_amount // 2)
+                offset = part_index // 2 - missing_amount // 2
                 upper_index = part_index * n + offset
                 lower_index = upper_index + missing_amount
                 # Add missing index to list
