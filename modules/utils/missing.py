@@ -156,7 +156,7 @@ class CreateMissingDataFrame:
         elif self.split_mode == SplitMode.End:
             mising_indexs.append(
                 (len(working_dataframe) - missing_amount, len(working_dataframe)))
-            working_dataframe[:missing_amount] = self.empty_value
+            working_dataframe[-missing_amount:] = self.empty_value
 
         # Save dropped dataframe and missing index
         self.dropped_dataframe = working_dataframe

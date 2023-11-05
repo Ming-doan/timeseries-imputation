@@ -43,6 +43,7 @@ class Trainer:
     def train(self,
               train_generator: WindowGenerator,
               test_generator: WindowGenerator,
+              forecast_lengths: list[int],
               callbacks: list[Callback] = None,
               cache: Cache = None):
         """
@@ -156,19 +157,27 @@ class Trainer:
                         callback.after_predict(y_true, y_pred)
 
             # Forecast the output
-            y_fore = model.forecast(
-                train_generator.get_last_window(), len(test_generator.dataframe))
-            y_true = test_generator.dataframe.values.squeeze()
-            if y_true.shape != y_fore.shape:
-                raise ValueError(
-                    f'Invalid output shape. y_true: {y_true.shape}, y_fore: {y_fore.shape}')
-            logger.info(
-                f'Similarity on forecasting: {Metrics.similarity(y_true, y_fore)}')
+            # y_fore = model.forecast(
+            #     train_generator.get_last_window(), len(test_generator.dataframe))
+
+            # Only for dpl-lab
+            y_fores = []
+            for forecast_length in forecast_lengths:
+                y_fores.append(model.forecast(
+                    test_generator.get_last_window(), forecast_length))
+
+            # y_true = test_generator.dataframe.values.squeeze()
+            # if y_true.shape != y_fore.shape:
+            #     raise ValueError(
+            #         f'Invalid output shape. y_true: {y_true.shape}, y_fore: {y_fore.shape}')
+            # logger.info(
+            #     f'Similarity on forecasting: {Metrics.similarity(y_true, y_fore)}')
 
             # Run callbacks
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.after_forecast(y_true, y_fore)
+                    for y_fore in y_fores:
+                        callback.after_forecast(y_fore, y_fore)
 
             logger.success(
                 f'Model {i+1}/{len(self.models)}~{model.name} completed.')

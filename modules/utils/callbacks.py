@@ -74,26 +74,27 @@ class SavePlot(Callback):
         Save the plot after forecasting the output.
         """
         # Increase the tracking
-        self.tracking += 1
+        # self.tracking += 1
 
         # Direction of pipeline
-        direction = 'Pipeline' if self.tracking <= self.n_times // 2 else 'Reverse_Pipeline'
+        # direction = 'Pipeline' if self.tracking <= self.n_times // 2 else 'Reverse_Pipeline'
 
         plt.figure(figsize=(15, 5))
         plt.plot(y_true, label='Actual')
         plt.plot(y_fore, label='Forecasted')
-        plt.title(f'Forecasted vs Actual of {self.model.name} on {direction}')
+        plt.title(
+            f'Forecasted vs Actual of {self.model.name} - {len(y_fore)} points')
         plt.legend()
         if self.save_directory is not None:
             plt.savefig(self.save_directory +
-                        f'/{self.model.name}_{direction}_{self.phase}.png')
+                        f'/{self.model.name}_{self.phase}.png')
         plt.show()
         plt.close()
 
         # Increment the phase
-        if self.tracking == self.n_times:
-            self.phase += 1
-            self.tracking = 0
+        # if self.tracking == self.n_times:
+        #     self.phase += 1
+        #     self.tracking = 0
 
 
 class CombinationMode(enum.Enum):
