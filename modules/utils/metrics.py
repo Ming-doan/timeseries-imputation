@@ -5,6 +5,7 @@ Metrics for evaluating the performance of the model.
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 class Metrics:
@@ -35,16 +36,18 @@ class Metrics:
         """
         Calculate the R2 score.
         """
-        y_true_mean = np.mean(y_true)
-        y_pred_mean = np.mean(y_pred)
-        return np.sum((y_true - y_true_mean) * (y_pred - y_pred_mean)) / np.sqrt(np.sum((y_true - y_true_mean) ** 2) * np.sum((y_pred - y_pred_mean) ** 2))
+        # y_true_mean = np.mean(y_true)
+        # y_pred_mean = np.mean(y_pred)
+        # return np.sum((y_true - y_true_mean) * (y_pred - y_pred_mean)) / np.sqrt(np.sum((y_true - y_true_mean) ** 2) * np.sum((y_pred - y_pred_mean) ** 2))
+        return r2_score(y_true, y_pred)
 
     @staticmethod
     def rmse(y_true: npt.NDArray[np.float32], y_pred: npt.NDArray[np.float32]):
         """
         Calculate the Root Mean Squared Error (RMSE).
         """
-        return np.sqrt(np.sum((y_true - y_pred) ** 2) / y_true.shape[0])
+        # return np.sqrt(np.sum((y_true - y_pred) ** 2) / y_true.shape[0])
+        return np.sqrt(mean_squared_error(y_true, y_pred))
 
     @staticmethod
     def fsd(y_true: npt.NDArray[np.float32], y_pred: npt.NDArray[np.float32]):

@@ -13,3 +13,4 @@ from .cnn1d import CNN1D
 from .cnnlstm import CNNLSTM
 from .gans import GANs
 from .transformer import TransformerTS
+from .kan import KAN

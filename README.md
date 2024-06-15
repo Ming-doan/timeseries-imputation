@@ -22,6 +22,7 @@ Project of `AIL303m` FPT University Da Nang. For conference paper.
 - `cnn1d` : Convolution Network 1D
 - `gans` : Generative Adversarial Network
 - `transformer` : Transformer
+- `kan`: Kolmogorov-Arnold Network
 
 ## 📖 Documentation
 

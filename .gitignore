@@ -2,4 +2,5 @@
 __pycache__/
 *.csv
 /results
+/temp
 playground.ipynb

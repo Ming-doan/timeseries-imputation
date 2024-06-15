@@ -12,7 +12,8 @@ from .models import (
     CNN1D,
     CNNLSTM,
     GANs,
-    TransformerTS
+    TransformerTS,
+    KAN
 )
 
 
@@ -62,6 +63,8 @@ def get_by_alias(alias: str, **kwargs):
         return GANs(**filter_and_format('gans', kwargs))
     if alias == 'transformer':
         return TransformerTS(**filter_and_format('transformer', kwargs))
+    if alias == 'kan':
+        return KAN(**filter_and_format('kan', kwargs))
     raise ValueError(
         f'Invalid model alias. Got: {alias}')
 
